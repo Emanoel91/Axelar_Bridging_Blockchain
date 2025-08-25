@@ -108,7 +108,7 @@ with col3:
     end_date = st.date_input("End Date", value=pd.to_datetime("2025-07-31"))  
 
 # --- Cached Query ------------------------------------------------------------------------------------------------
-@st.cache_data
+# -- @st.cache_data
 def load_overview_data(start_date, end_date):
     query = f"""
     with overview as (

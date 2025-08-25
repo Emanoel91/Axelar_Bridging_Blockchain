@@ -171,7 +171,7 @@ def load_overview_data(start_date, end_date):
     from overview
     where date between '{start_date}' and '{end_date}'
     """
-    return pd.read_sql(query, conn)
+    return pd.read_sql(query, _conn)
 
 # --- Load Data ---------------------------------------------------------------------------------------------------
 df_kpi = load_overview_data(start_date, end_date)

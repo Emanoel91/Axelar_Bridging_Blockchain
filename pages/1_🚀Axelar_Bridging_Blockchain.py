@@ -9,7 +9,7 @@ from cryptography.hazmat.backends import default_backend
 
 # --- Page Config ------------------------------------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Axelar: Bridging Blockchain Ecosystems",
+    page_title="Axelar: Bridging Blockchain",
     page_icon="https://img.cryptorank.io/coins/axelar1663924228506.png",
     layout="wide"
 )

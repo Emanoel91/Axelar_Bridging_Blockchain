@@ -105,7 +105,7 @@ with col2:
     start_date = st.date_input("Start Date", value=pd.to_datetime("2024-01-01"))
 
 with col3:
-    end_date = st.date_input("End Date", value=pd.to_datetime("2025-07-31"))
+    end_date = st.date_input("End Date", value=pd.to_datetime("2025-08-31"))
 
 # --- Cached Query Execution ---------------------------------------------------------------------------------
 # --- Row 1, 2 --------------------------------------------------------------------------------------------------------------------------------------------------------------------

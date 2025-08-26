@@ -108,6 +108,7 @@ with col3:
     end_date = st.date_input("End Date", value=pd.to_datetime("2025-07-31"))
 
 # --- Cached Query Execution ---------------------------------------------------------------------------------
+# --- Row 1, 2 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 @st.cache_data
 def get_kpi_data(_conn, start_date, end_date):
     query = f"""
@@ -149,6 +150,34 @@ def get_kpi_data(_conn, start_date, end_date):
     """
     df = pd.read_sql(query, _conn)
     return df.iloc[0]
+
+# --- Load KPI Data from Snowflake ---------------------------
+kpi_df = get_kpi_data(conn, start_date, end_date)
+
+# --- Display KPI (Row 1 & 2) --------------------------------
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.markdown("**Number of Transfers**")
+    st.markdown(f"{kpi_df['TRANSFERS']/1000:.1f}K Txns")
+with col2:
+    st.markdown("**Number of Users**")
+    st.markdown(f"{kpi_df['USERS']/1000:.1f}K Wallets")
+with col3:
+    st.markdown("**Volume of Transfers**")
+    st.markdown(f"${kpi_df['VOLUME_USD']/1_000_000:.1f}M")
+
+col4, col5, col6 = st.columns(3)
+with col4:
+    st.markdown("**Avg Txn count per User**")
+    st.markdown(f"{kpi_df['AVG_TX_PER_USER']/1000:.1f}K Txns")
+with col5:
+    st.markdown("**Avg Volume per Txn**")
+    st.markdown(f"${kpi_df['AVG_VOLUME_TX']/1000:.1f}K")
+with col6:
+    st.markdown("**Avg Volume per User**")
+    st.markdown(f"${kpi_df['AVG_VOLUME_USER']/1000:.1f}K")
+
+# --- Row 3 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 @st.cache_data
 def get_ts_data(_conn, start_date, end_date, timeframe):
@@ -192,31 +221,10 @@ def get_ts_data(_conn, start_date, end_date, timeframe):
     """
     df = pd.read_sql(query, _conn)
     return df
-
-# --- Load KPI Data from Snowflake -------------------------------------------------------------------------------
-kpi_df = get_kpi_data(conn, start_date, end_date)
-
-# --- Display KPI (Row 1 & 2) -----------------------------------------------------------------------------------
-col1, col2, col3 = st.columns(3)
-with col1:
-    st.metric("Txns", f"{kpi_df['TRANSFERS']/1000:.1f}K")
-with col2:
-    st.metric("Wallets", f"{kpi_df['USERS']/1000:.1f}K")
-with col3:
-    st.metric("Volume", f"${kpi_df['VOLUME_USD']/1_000_000:.1f}M")
-
-col4, col5, col6 = st.columns(3)
-with col4:
-    st.metric("Avg Txns/User", f"{kpi_df['AVG_TX_PER_USER']/1000:.1f}K")
-with col5:
-    st.metric("Avg Vol/Txn", f"${kpi_df['AVG_VOLUME_TX']/1000:.1f}K")
-with col6:
-    st.metric("Avg Vol/User", f"${kpi_df['AVG_VOLUME_USER']/1000:.1f}K")
-
-# --- Load Time-Series Data from Snowflake ----------------------------------------------------------------------
+# --- Load Time-Series Data from Snowflake -------------------
 ts_df = get_ts_data(conn, start_date, end_date, timeframe)
 
-# --- Display Charts (Row 3) ------------------------------------------------------------------------------------
+# --- Display Charts (Row 3) ---------------------------------
 col1, col2 = st.columns(2)
 
 with col1:

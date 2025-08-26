@@ -490,7 +490,10 @@ with col1:
 with col2:
     fig_pie = go.Figure(data=[go.Pie(
         labels=df_token["Token"],
-        values=df_token["Volume of Transfers (USD)"]
+        values=df_token["Volume of Transfers (USD)"],
+        textinfo='label+percent',       
+        textposition='inside',          
+        insidetextorientation='radial'  
     )])
     fig_pie.update_layout(
         title="Total Volume of Transfers by Token (USD)"

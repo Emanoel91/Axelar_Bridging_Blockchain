@@ -406,10 +406,14 @@ with col1:
     st.plotly_chart(fig_hbar, use_container_width=True)
 
 # Pie Chart: Volume of Transfers by Destination Chain
+
 with col2:
     fig_pie = go.Figure(data=[go.Pie(
-        labels=df_destination_chain["Destination Chain"],
-        values=df_destination_chain["Volume of Transfers (USD)"]
+        labels=df_token["Destination Chain"],
+        values=df_token["Volume of Transfers (USD)"],
+        textinfo='label+percent',       
+        textposition='inside',          
+        insidetextorientation='radial'  
     )])
     fig_pie.update_layout(
         title="Total Volume of Transfers by Destination Chain (USD)"

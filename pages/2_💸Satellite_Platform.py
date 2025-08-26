@@ -409,8 +409,8 @@ with col1:
 
 with col2:
     fig_pie = go.Figure(data=[go.Pie(
-        labels=df_token["Destination Chain"],
-        values=df_token["Volume of Transfers (USD)"],
+        labels=df_destination_chain["Destination Chain"],
+        values=df_destination_chain["Volume of Transfers (USD)"],
         textinfo='label+percent',       
         textposition='inside',          
         insidetextorientation='radial'  

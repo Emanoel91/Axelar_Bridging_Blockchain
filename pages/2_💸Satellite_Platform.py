@@ -15,7 +15,7 @@ st.set_page_config(
 )
 
 # --- Title  -----------------------------------------------------------------------------------------------------
-st.title("💸Satellite Platform")
+st.title("💸Satellite Platform test")
 
 # --- attention ---------------------------------------------------------------------------------------------------------
 st.info("📊Tables initially display data for a default time range. Select a custom range to view results for your desired period.")

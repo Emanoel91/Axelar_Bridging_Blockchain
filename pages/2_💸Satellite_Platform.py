@@ -20,6 +20,8 @@ st.title("💸Satellite Platform")
 # --- attention ---------------------------------------------------------------------------------------------------------
 st.info("📊Tables initially display data for a default time range. Select a custom range to view results for your desired period.")
 st.info("⏳On-chain data retrieval may take a few moments. Please wait while the results load.")
+st.info("⭕The standalone Satellite interface is no longer available. The old satellite.money interface, which allowed users to transfer tokens across chains, 
+has been deprecated. Now, satellite.money redirects you to the Squid Router interface.")
 
 # --- Sidebar Footer Slightly Left-Aligned ---
 st.sidebar.markdown(

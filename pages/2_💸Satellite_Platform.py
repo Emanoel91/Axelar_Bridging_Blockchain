@@ -96,10 +96,13 @@ conn = snowflake.connector.connect(
 )
 
 # --- Date Inputs ---------------------------------------------------------------------------------------------------
-col1, col2 = st.columns(2) 
+col1, col2, col3 = st.columns(3)
 
 with col1:
-    start_date = st.date_input("Start Date", value=pd.to_datetime("2025-01-01"))
+    timeframe = st.selectbox("Select Time Frame", ["month", "week", "day"])
 
-with col2: 
-    end_date = st.date_input("End Date", value=pd.to_datetime("2025-08-31"))
+with col2:
+    start_date = st.date_input("Start Date", value=pd.to_datetime("2023-01-01"))
+
+with col3:
+    end_date = st.date_input("End Date", value=pd.to_datetime("2025-07-31"))

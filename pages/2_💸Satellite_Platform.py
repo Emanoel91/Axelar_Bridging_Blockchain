@@ -233,9 +233,9 @@ with col1:
     fig1.add_trace(go.Scatter(x=ts_df["DATE"], y=ts_df["USERS"], name="Users", mode="lines+markers", yaxis="y2"))
     fig1.update_layout(
         title="Number of Transfers & Users Over Time",
-        yaxis=dict(title="Transfers"),
-        yaxis2=dict(title="Users", overlaying="y", side="right"),
-        xaxis=dict(title="Date"),
+        yaxis=dict(title="Txns count"),
+        yaxis2=dict(title="Wallet count", overlaying="y", side="right"),
+        xaxis=dict(title=" "),
         barmode="group"
     )
     st.plotly_chart(fig1, use_container_width=True)
@@ -246,9 +246,9 @@ with col2:
     fig2.add_trace(go.Scatter(x=ts_df["DATE"], y=ts_df["AVG_VOLUME_TX"], name="Avg Volume/Txn", mode="lines+markers", yaxis="y2"))
     fig2.update_layout(
         title="Volume of Transfers Over Time",
-        yaxis=dict(title="Volume (USD)"),
-        yaxis2=dict(title="Avg Volume/Txn", overlaying="y", side="right"),
-        xaxis=dict(title="Date"),
+        yaxis=dict(title="$USD"),
+        yaxis2=dict(title="$USD", overlaying="y", side="right"),
+        xaxis=dict(title=" "),
         barmode="group"
     )
     st.plotly_chart(fig2, use_container_width=True)
@@ -316,8 +316,8 @@ with col1:
     fig_bar.add_trace(go.Scatter(x=df_source_chain["Source Chain"], y=df_source_chain["Number of Users"], name="Number of Users", mode="lines+markers", yaxis="y2"))
     fig_bar.update_layout(
         title="Total Number of Transfers & Users by Source Chain",
-        yaxis=dict(title="Number of Transfers"),
-        yaxis2=dict(title="Number of Users", overlaying="y", side="right"),
+        yaxis=dict(title="Txns count"),
+        yaxis2=dict(title="Wallet count", overlaying="y", side="right"),
         xaxis=dict(title="Source Chain"),
         barmode="group"
     )
@@ -331,12 +331,11 @@ with col2:
         hole=0.5
     )])
     fig_donut.update_layout(
-        title="Total Volume of Transfers by Source Chain"
+        title="Total Volume of Transfers by Source Chain ($USD)"
     )
     st.plotly_chart(fig_donut, use_container_width=True)
 
 # --- Row 5 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-# --- Cached Query Execution for Destination Chains -------------------------------------------------------------
 @st.cache_data
 def get_destination_chain_summary(_conn, start_date, end_date):
     query = f"""
@@ -400,7 +399,7 @@ with col1:
     fig_hbar.update_layout(
         title="Total Number of Transfers & Users by Destination Chain",
         barmode='group',
-        xaxis=dict(title="Count"),
+        xaxis=dict(title=" "),
         yaxis=dict(title="Destination Chain")
     )
     st.plotly_chart(fig_hbar, use_container_width=True)
@@ -417,3 +416,82 @@ with col2:
     st.plotly_chart(fig_pie, use_container_width=True)
 
 
+# --- Row 6 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+@st.cache_data
+def get_token_summary(_conn, start_date, end_date):
+    query = f"""
+    WITH overview AS (
+      WITH tab1 AS (
+        SELECT block_timestamp::date AS date, tx_hash, source_chain, destination_chain, sender, token_symbol
+        FROM AXELAR.DEFI.EZ_BRIDGE_SATELLITE
+        WHERE block_timestamp::date >= '{start_date}' AND block_timestamp::date <= '{end_date}'
+      ),
+      tab2 AS (
+        SELECT 
+            created_at::date AS date, 
+            LOWER(data:send:original_source_chain) AS source_chain, 
+            LOWER(data:send:original_destination_chain) AS destination_chain,
+            sender_address AS user,
+            CASE 
+              WHEN IS_ARRAY(data:send:amount) THEN NULL
+              WHEN IS_OBJECT(data:send:amount) THEN NULL
+              WHEN TRY_TO_DOUBLE(data:send:amount::STRING) IS NOT NULL THEN TRY_TO_DOUBLE(data:send:amount::STRING)
+              ELSE NULL
+            END AS amount,
+            CASE 
+              WHEN IS_ARRAY(data:send:amount) OR IS_ARRAY(data:link:price) THEN NULL
+              WHEN IS_OBJECT(data:send:amount) OR IS_OBJECT(data:link:price) THEN NULL
+              WHEN TRY_TO_DOUBLE(data:send:amount::STRING) IS NOT NULL AND TRY_TO_DOUBLE(data:link:price::STRING) IS NOT NULL 
+                THEN TRY_TO_DOUBLE(data:send:amount::STRING) * TRY_TO_DOUBLE(data:link:price::STRING)
+              ELSE NULL
+            END AS amount_usd,
+            SPLIT_PART(id, '_', 1) AS tx_hash
+        FROM axelar.axelscan.fact_transfers
+        WHERE status = 'executed' AND simplified_status = 'received'
+          AND created_at::date >= '{start_date}' AND created_at::date <= '{end_date}'
+      )
+      SELECT tab1.date, tab1.tx_hash, tab1.source_chain, tab1.destination_chain, sender, token_symbol, amount, amount_usd
+      FROM tab1 LEFT JOIN tab2 ON tab1.tx_hash=tab2.tx_hash
+    )
+    SELECT 
+      token_symbol AS "Token",
+      COUNT(DISTINCT tx_hash) AS "Number of Transfers",
+      COUNT(DISTINCT sender) AS "Number of Users",
+      ROUND(SUM(amount_usd)) AS "Volume of Transfers (USD)"
+    FROM overview
+    WHERE destination_chain IS NOT NULL
+    GROUP BY 1
+    ORDER BY 2 DESC;
+    """
+    df = pd.read_sql(query, _conn)
+    return df
+
+# --- Load Token Summary Data ----------------------------------------------------------------------
+df_token = get_token_summary(conn, start_date, end_date)
+
+# --- Display Charts --------------------------------------------------------------------------------------------
+col1, col2 = st.columns(2)
+
+# Clustered Horizontal Bar Chart: Transfers & Users
+with col1:
+    fig_hbar = go.Figure()
+    fig_hbar.add_bar(y=df_token["Token"], x=df_token["Number of Transfers"], name="Number of Transfers", orientation='h')
+    fig_hbar.add_bar(y=df_token["Token"], x=df_token["Number of Users"], name="Number of Users", orientation='h')
+    fig_hbar.update_layout(
+        title="Total Number of Transfers & Users by Token",
+        barmode='group',
+        xaxis=dict(title=" "),
+        yaxis=dict(title="Token Symbol")
+    )
+    st.plotly_chart(fig_hbar, use_container_width=True)
+
+# Pie Chart: Volume of Transfers by Token
+with col2:
+    fig_pie = go.Figure(data=[go.Pie(
+        labels=df_token["Token"],
+        values=df_token["Volume of Transfers (USD)"]
+    )])
+    fig_pie.update_layout(
+        title="Total Volume of Transfers by Token (USD)"
+    )
+    st.plotly_chart(fig_pie, use_container_width=True)

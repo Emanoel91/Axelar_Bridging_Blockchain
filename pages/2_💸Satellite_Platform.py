@@ -3,7 +3,6 @@ import pandas as pd
 import snowflake.connector
 import plotly.graph_objects as go
 import plotly.express as px
-import plotly.graph_objects as go
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
 
@@ -170,7 +169,7 @@ with col3:
 col4, col5, col6 = st.columns(3)
 with col4:
     st.markdown("**Avg Txn count per User**")
-    st.markdown(f"{kpi_df['AVG_TX_PER_USER']/1000:.1f}K Txns")
+    st.markdown(f"{kpi_df['AVG_TX_PER_USER']:.1f} Txns")
 with col5:
     st.markdown("**Avg Volume per Txn**")
     st.markdown(f"${kpi_df['AVG_VOLUME_TX']/1000:.1f}K")
